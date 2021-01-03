@@ -1,0 +1,85 @@
+ol {
+list-style: none;
+}
+ol > li {
+ position: relative;
+}
+ol.subsec {
+ counter-reset:list1;
+}
+ol.subsec > li:before {
+ counter-increment: list1;
+ content: "("counter(list1, decimal) ") "; 
+}
+ol.para {
+ counter-reset:lista;
+}
+ol.para > li:before {
+ counter-increment: lista;
+ content: "("counter(lista, lower-alpha) ") ";
+}
+ol.subpara {
+ counter-reset:listU;
+}
+ol.subpara > li:before {
+ counter-increment: listU;
+ content: "("counter(listU, upper-alpha) ") ";
+}
+ol.sub2para {
+ counter-reset:listi;
+}
+ol.sub2para > li:before {
+ counter-increment: listi;
+ content: "("counter(listi, lower-roman) ") ";
+}
+ol.sub3para {
+ counter-reset:listR;
+}
+ol.sub3para > li:before {
+ counter-increment: listR;
+ content: "("counter(listR, upper-roman) ") ";
+}
+</style>
+</head>
+<body>
+<div class="section">
+<p>ORS 90.100. Things in this chapter.</p>
+<ol class = "subsec">
+ <li>Here is the first one.</li>
+ <li>This is second.</li>
+ <ol class = "para">
+  <li>Paragraph a.</li>
+  <li>Paragraph b.</li>
+ </ol>
+ <li>Third subsection.</li>
+ <ol class = "para">
+  <li>New para a.</li>
+  <ol class = "subpara">
+   <li></li>
+   <ol class = "sub2para">
+    <li>This ought to be (3)(a)(A)(i), but we'll see.</li>
+    <li>And then this would be ii.</li>
+   </ol>
+   <li>Which would make this (3)(a)(B).</li>
+   <li>Three Acey.</li>
+    <ol class = "sub2para">
+	 <li></li>
+     <ol class = "sub3para">
+      <li>So then we're now at 3-a-C-i-I</li>
+      <li>II.</li>
+	  <li>One One One.</li>
+     </ol>
+     <li>Three Acey ii.</li>
+     <li>Three Acey 3.</li>
+    </ol>
+   <li>Three AD.</li>
+   <li>Easy.</li>
+  </ol>
+  <li>Little bee.</li>
+  <li>Little sea.</li>
+ </ol>
+ <li>Here ends sub four.</li>
+</ol>
+</div>
+</body>
+</html>

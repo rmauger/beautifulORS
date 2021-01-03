@@ -1,27 +1,42 @@
 from ors_dl import *
 from clean import *
+from classify import *
 from htmlwrite import *
 
+# Commented out pieces work, but no reason to keep downloading file, seems a bit suspect
 chp = '99'
-soup_ors = ors_html_dl(chp)     # strings from ORS <p> tags into raw unicode text
-print(soup_ors.encode('utf-8'))
-with open('ors_raw.txt', 'w') as raw:
-    raw.write(soup_ors)
+# soup_ors = ors_html_dl(chp)     # strings from ORS <p> tags into raw unicode text
+#
+# # with open('ors_raw.txt', 'w') as raw # DEBUGGING
+# #     raw.write(str(soup_ors))
+#
+# first_clean = cleaner(soup_ors, chp)               # pass document through initial cleaner
+#
+# # with open('ors_cln.txt', 'w') as cln:  # DEBUGGING
+# #     cln.write(first_clean)
+#
+# clean_ors = []
+# for clean_line in first_clean.split('|'):               # first attempt to guess type after split based on pipes
+#     if len(clean_line) > 1:                             # for pieces longer than character
+#         clean_ors.append([typer(clean_line, chp), clean_line])      # add line & type to 2D list
+#
+# reclassify(clean_ors)
+#
+# with open('ors_typed.txt', 'w') as typed:
+#     for i in clean_ors:
+#         typed.write(f'{i[0]}|{i[1]}\n')
+# # ***********************
 
-tempcount = 0
+
+# Temp piece backward engineering 'clean_ors" from .txt
+
+with open('ors_typed.txt', 'r') as typed:
+    read = typed.readlines()
+
 clean_ors = []
 
-first_clean = cleaner(soup_ors, chp)               # pass document through initial cleaner
-with open('ors_cln.txt', 'w') as cln:
-    cln.write(first_clean)
+for i in read:
+    clean_ors.append(i[0:-1].split('|'))
 
-for clean_line in first_clean.split('|'):      # first attempt to guess type after split based on pipes
-#        print(clean_line)
-    if len(clean_line) > 1:                # for pieces longer than character
-        clean_ors.append([clean_line + hr, typer(clean_line, chp)]) # add line & type to 2D list
 
-#print(clean_ors[45:50])
-
-        # pass second clean into next step
-        # ors_line.append([str(p_type_ors(j)), re.sub(r'#!', "", j + hr)]) # add piece & type to list
-
+html_builder(clean_ors, chp)
