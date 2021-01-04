@@ -16,15 +16,15 @@ def ors_html_dl(ors):         # from ORS number, returns array for each line
         ans = '0' + ans
     ors_line = ""
     ors_url = fr'https://www.oregonlegislature.gov/bills_laws/ors/ors{ans}.html'
-    # rq_ors = BeautifulSoup(requests.get(ors_url).content, 'lxml')
     dl_ors = BeautifulSoup(request.urlopen(ors_url).read(), 'html.parser')
     dl_ors.smooth()
 
     for i in dl_ors.find_all('p', class_='MsoNormal'):          # extract line from html
         if re.search('align="center"', str(i)):
-            ors_line = ors_line + '^!' + i.text.strip() + '^!'
-        elif i.select('b'):
-            ors_line = ors_line + '%!' + i.text.strip() + '%!'
+            if len(i.text.strip()) > 3:
+                ors_line = ors_line + '|^' + i.text.strip()   # subtitles
+        elif i.select('b'):         # leadlines
+            ors_line = ors_line + '|' + i.text.strip()   # TODO figure out leadlines for 9th time
         else:
             ors_line = ors_line + i.text
     return ors_line
