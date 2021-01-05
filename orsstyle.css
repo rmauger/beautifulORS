@@ -4,6 +4,7 @@
 }
 h1.title {
 	text-align:center;
+	margin: 10px;
 }
 .toc {
 color: white;
@@ -11,30 +12,45 @@ color: white;
 	border-style: none;
 	width: 80%;
 	margin: auto;
-	padding:10px 2px 10px 2px;
-}
-ul.toc {
+	padding:15px 25px 15px 25px;
+} 
+
+div.toc li{
 	list-style-position:inside;
 	margin:3px 25px 5px 75px;
-	padding:3px 25px 3px 75px;
-	width:initial;
+	padding:3px 55px 3px 55px;
 	text-indent:-75px;
 }
-a.toca:link {
-	color: rgb(242, 180, 50);
-}
-a.toca:visited {
-	color: rgb(242, 100, 30);
-}
-h2.toc, h3.toc {
-	margin: initial;
-	width: initial;
-	padding: initial;
+div.toc h2,h3 {
 	text-align: center;
-	color: rgb(230, 255, 40)	
+	margin: auto;
+	width: 80%;
+	padding: 8px;
 }
-h2.toc {
-	font-size:170%
+div.toc h2 {
+	font-size:170%;
+	padding: 4px;
+}
+div.toc h3 {	
+	color: rgb(230, 255, 40);
+}
+div.toc a:link {
+	color: rgb(255, 154, 33);
+}
+div.toc a:visited {
+	color: rgb(242, 140, 30);
+}
+.form-box {
+	width: 70%;
+	margin: auto;
+	padding: 5%;
+	border: 2px;
+	background-color: rgb(230, 230, 250);
+}
+.form-box p {
+	padding:5px;
+	margin:5px;
+	width:100%;
 }
 
 .section {

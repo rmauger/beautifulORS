@@ -15,14 +15,13 @@ sqq = '"'       # straight double quote
 
 
 def cleaner(dirty_text, ors):
-    ors_match = fr'{ors}\.\d{{3}}'
     h = str(dirty_text).strip()
     h = h.replace(sec, sex)
     h = h.replace(rq, sq)
     h = h.replace(lq, sq)
     h = h.replace(lqq, sqq)
     h = h.replace(rqq, sqq)
-    h = re.sub(r'_{21,100}', r'|\g<0>|', h)  # picks up long underlines, puts on own line
+    h = re.sub(r'(_{21,100})([^_])', r'|\g<1>|\g<2>', h)  # picks up long underlines, puts on own line
     h = h.replace(hr+hr, ' ')
     h = h.replace(hr, ' ')
     h = h.replace('\n', ' ')
@@ -36,7 +35,7 @@ def cleaner(dirty_text, ors):
     h = h.replace('| |', '|')
     h = h.replace('||', '|')
     # finding index:
-    index_match = fr'[\|{nbsp} ]+({ors}\.\d{{3}}){nbsp}{nbsp}+ ?([a-zA-Z].+?)({nbsp}|\|%)'  # index: trailing tab & no period
+    index_match = fr'[\|{nbsp} ]+({ors}\.\d{{3}}){nbsp}{nbsp}+ ?([a-zA-Z\0-9"].+?)({nbsp}|\|%)'  # index: trailing tab & no period
     print(f'index: {index_match}')
     logger('index', h)
     h = re.sub(index_match, fr'|%\g<1>|%\g<2>|\g<3>', h)
@@ -44,7 +43,7 @@ def cleaner(dirty_text, ors):
     h = re.sub(index_match, fr'|%\g<1>|%\g<2>|\g<3>', h)
     h = re.sub(index_match, r'|%\g<1>|%\g<2>|\g<3>', h)
     # finding leadlines:
-    leadline = fr'\|+[ {nbsp}]?[ {nbsp}]?({ors}\.\d{{3}})[ {nbsp}]?([^\|].+?[a-zA-Z]\.)[\| {nbsp}]+'  # matches new line + ORS section + more info until period & space
+    leadline = fr'\|+[ {nbsp}]?[ {nbsp}]?({ors}\.\d{{3}})[ {nbsp}]?([^\|].+?[a-zA-Z0-9\"]\.)[\| {nbsp}]+'  # matches new line + ORS section + more info until period & space
     print(f'leadline: {leadline}')
 #    logger('leadline', h)
     # for i in h.split('|'):
