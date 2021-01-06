@@ -1,11 +1,13 @@
 * {
 	max-width:900px;
 	margin:auto;
+
+.main {
+	padding: 15px 15px;
+	color: black;
+	background-color: rgb(248, 240, 220);
 }
-h1.title {
-	text-align:center;
-	margin: 10px;
-}
+
 .toc {
 color: white;
 	background-color: rgb(10, 30, 90);
@@ -40,54 +42,76 @@ div.toc a:link {
 div.toc a:visited {
 	color: rgb(242, 140, 30);
 }
-.form-box {
-	width: 70%;
-	margin: auto;
-	padding: 5%;
-	border: 2px;
-	background-color: rgb(230, 230, 250);
+
 }
-.form-box p {
-	padding:5px;
-	margin:5px;
-	width:100%;
+h1.title {
+	text-align:center;
+	margin: 10px;
 }
 
 .section {
+	text-align:justify;
 	margin-top: 8px;
 	margin-bottom: 6px;
 	border-style: solid none none none;
 }
-.slug {
-	margin-left: 15px;
-	text-indent: -10px;
-	margin-top: 6px;
-	margin-bottom: 6px;
-}
-.source_note {
-	color: rgb(80, 80, 140);
-	margin: 0px 0px 5px 0px;
-}
-.main {
-	padding: 15px 15px;
-	color: black;
-	background-color: rgb(248, 240, 220);
-}
-.or_sec {
-	font-weight:bold;
-	margin: 6px 0px 6px 0px;
-	padding:inherit;
-}
-.leadline {
-	font-weight:bold;
-	color: rgb(20, 40, 80)
-}
-.note {
-	color: rgb(140,0, 220)
-}
-.unknown {
-	color: rgb(200, 40, 40)
-}
+	.section .alternate {
+		margin: 0px 10px 10px 10px;
+		padding: 0px 8px 2px 8px;
+		border: none;
+		font-style: italic;
+	}
+	.section .alternate .note {
+		margin: 20px 32px 0px 32px;
+		padding: 0px;
+		font-style: normal;
+	}
+
+	.section .form-box {
+		width: 70%;
+		margin: auto;
+		padding: 4%;
+		border: 2px solid rgb(50 50 140);
+		background-color: rgb(230, 230, 250);
+	}
+	.section .form-box p {
+		border: none;
+		padding:5px;
+		margin:2px;
+		width:100%;
+	}
+
+	.section .leadline {
+		font-weight:bold;
+		color: rgb(14, 44, 104)
+	}
+
+	.section .note {
+		color: rgb(70, 12, 104);
+		margin: 5px 50px;
+	}
+
+	.section .or_sec {
+		font-weight:bold;
+		margin: 6px 0px 6px 0px;
+		padding:inherit;
+	}
+
+	.section .slug {
+		text-indent: -15px;
+		margin: 6px 3px 6px 25px;
+	}
+
+	.section .source_note {
+		color: rgb(80, 80, 140);
+		margin: 0px 0px 5px 0px;
+	}
+
+	.section .unknown {
+		color: rgb(129, 12, 12);
+		text-style:normal;
+	}
+
 li {
 	padding:2px 0px 4px 0px;
 }
