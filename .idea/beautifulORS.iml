@@ -8,7 +8,7 @@
       <sourceFolder url="file://$MODULE_DIR$/venv/Lib/site-packages" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/venv/Scripts" isTestSource="false" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.9 (beautifulORS)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.8 (beautifulORS)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PyDocumentationSettings">

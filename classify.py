@@ -1,10 +1,10 @@
 # classifies ORS lines into categories:
 # - title (unique, should be "Chapter XXX -- TITLE')
 # - SUBTITLE
-# -   (Sub2title) # TODO add to html & css.
+# -   (Sub2title)
 # - index (table of contents info)
-# - index_sub (subsection w/in index)
-# # TODO add index_sub2
+# - INDEX_SUB (subsection w/in index)
+# -    (index2sub) #TODO double check index_sub2
 # - or_sec (sections or note sections)
 # - leadline (leadline explaining ORS section)
 # - slug (ORS paragraph with no subsections)
@@ -19,10 +19,18 @@
 # - note_sec  (notes between sections)
 # - source_note  (legislative history)
 # - dunno (unclassified)
-
 import re
-from clean import logger
+from common import print_err
 
+# global variables for def cleaner:
+roman = ['iii', 'iv', 'vi', 'vii', 'viii', 'ix', 'xi', 'xii', 'xiii', 'xiv', 'xv']
+romanish = ['i', 'ii', 'v', 'x']
+prior_para = {
+    'i': 'h',
+    'ii': 'hh',
+    'v': 'u',
+    'x': 'w'}       # letter with its preceeding pair
+nbsp = u'\xa0'
 
 def in_bracs(txt):          # takes in string beginning with "(xxx)" and returns xxx as string.
     t = str(txt)
@@ -49,7 +57,7 @@ def typer(type_me, ors):         # takes in line, returns best guess of line typ
     elif re.search(r'Note( \d{1,2})?: ', txt[0:9]):
         return 'note_sec'
     elif txt[0:5] == 'Sec. ':
-        return 'or_sec'
+        return 'temp_sec'
     elif txt[0:len(ors)] == ors:
         if len(txt) == len(ors)+4:
             return 'or_sec'
@@ -66,7 +74,7 @@ def typer(type_me, ors):         # takes in line, returns best guess of line typ
             else:
                 for i in roman:
                     if in_brac == i.upper():
-                        return 'sub3_para'
+                        return 'sub3para'
                 for i in romanish:
                     if in_brac == i.upper():
                         return 'ROMANISH'
@@ -100,15 +108,6 @@ def typer(type_me, ors):         # takes in line, returns best guess of line typ
     if txt[0:8 + len(ors)] == 'Chapter ' + ors:
         return 'title'
     return 'dunno'
-# variables for def cleaner:
-
-roman = ['iii', 'iv', 'vi', 'vii', 'viii', 'ix', 'xi', 'xii', 'xiii', 'xiv', 'xv']
-romanish = ['i', 'ii', 'v', 'x']
-prior_para = {
-    'i': 'h',
-    'ii': 'hh',
-    'v': 'u',
-    'x': 'w'}       # letter with its preceeding pair
 
 
 def reclassify(typed_list, ors):           # takes in full 2nd clean two column list
@@ -123,9 +122,9 @@ def reclassify(typed_list, ors):           # takes in full 2nd clean two column 
                 if count > 0:
                     typed_list[count], typed_list[0] = typed_list[0], typed_list[count]
             else:
+                print_err(f'Repeated title found during reclassification', f'For {line}')
                 line[0] = 'dunno'
-                print(f'Dunno triggered when repeated title found in: {line}')
-        if (line[0] != 'slug' and line[0] != 'index' and line[0] != 'leadline' \
+        if (line[0] != 'slug' and line[0] != 'index' and line[0] != 'leadline'
                 and line[0] != 'subtitle' and line[0] != 'da_sec') or re.match(r'[a-zA-Z0-9(]', line[1][0]):
             pass
         else:  # get rid of line intro trigger '!, %, ^, @ or #'
@@ -145,7 +144,6 @@ def reclassify(typed_list, ors):           # takes in full 2nd clean two column 
                     line[0] = 'form'                    # don't try to start a new form if we're already in one
                 else:
                     line.append(typed_list[count - 1][0])     # puts parent into form data (3rd slot)
-                    print(f'form parent: {typed_list[count-1]}')
             in_form = True
         if in_form:
             if line[0] == 'subtitle' or line[0] == 'sub2title' or line[0] == 'dunno' or line[0] == 'slug':
@@ -155,31 +153,43 @@ def reclassify(typed_list, ors):           # takes in full 2nd clean two column 
                     pass
                 else:
                     in_form = False
-                    print(f'    > form terminated by : {line}.')
-        if line[0] != 'form':       # splitting on nbsp when not in form
-            line[1] = re.sub(r'^ ', '', line[1])    # delete first space in line
-            if re.search(u'\xa0', line[1]):
+
+        if line[0] != 'form' and line[0] != 'index':       # splitting on nbsp when not in form
+            line[1] = re.sub(fr'^[ {nbsp}]', '', line[1])    # delete first space in line
+            while len(line[1]) != len(re.sub(f'{nbsp}{nbsp}', nbsp, line[1])):
+                line[1] = re.sub(f'{nbsp}{nbsp}', nbsp, line[1])
+            line[1] = re.sub(fr'U.S.C.{nbsp}+', r'U.S.C. ', line[1])
+            if re.search(nbsp, line[1]):
                 num = 0
-                for i in line[1].split(u'\xa0'):
+                for i in line[1].split(nbsp):
                     if num > 0:
                         typed_list.insert(count+num, [typer(i, ors), i])
                     num += 1
-                line[1] = line[1].split(u'\xa0')[0]
+                line[1] = line[1].split(nbsp)[0]
+
         if line[0] == 'subtitle':   # replace subtitles coming after index terms as within index.
             try:
-                if typed_list[count + 1][0] == 'index' and \
-                        (typed_list[count - 1][0] == 'index' or typed_list[count - 1][0] == 'subtitle'):
-                    line[0] = 'index_sub'
+                temp = 0
+                while typed_list[count + temp][0] == 'sub2title' or typed_list[count + temp][0] == 'subtitle' or \
+                        typed_list[count + temp][0] == 'dunno' or typed_list[count + temp][0] == 'index':
+                    if typed_list[count + temp][0] == 'index':
+                        line[0] = 'index_sub'
+                        break
+                    temp += 1
             except Exception as e:
-                print(f'err:  {e}, line # {count} for: {line}')
-        if line[0] == 'sub2title':   # replace subtitles coming after index terms as within index.
+                print_err(e, f'line #{count} for: {line}')
+        if line[0] == 'sub2title' or line[0] == 'dunno':   # replace subtitles coming after index terms as within index.
             try:
-                if typed_list[count + 1][0] == 'index' and \
-                        (typed_list[count - 1][0] == 'index' or typed_list[count - 1][0] == 'subtitle'):
-                    line[0] = 'index2sub'
+                temp = 0
+                while typed_list[count + temp][0] == 'sub2title' or typed_list[count + temp][0] == 'subtitle' or \
+                        typed_list[count + temp][0] == 'dunno' or typed_list[count + temp][0] == 'index':
+                    if typed_list[count + temp][0] == 'index':
+                        line[0] = 'index2sub'
+                    temp += 1
             except Exception as e:
-                print(f'ERR:  {e}, subtitle line # {count} for: {line}')
+                print_err(e, f'sub2title -> index reclass in line# {count} for: {line}')
 
+        # classifying note secs
         if line[0] == 'note_sec':           # classifying note secs
             if re.search(fr'The amendments to ({ors}|section)', line[1]):
                 line[0] = 'note_both'
@@ -187,6 +197,9 @@ def reclassify(typed_list, ors):           # takes in full 2nd clean two column 
                 line[0] = 'note_next'
             else:
                 line[0] = 'note_prev'
+        # TODO depreciate or re-evaluate whether identifying note type can be used successfully
+
+        # Dealing with unique issues involving classifying subdivisions
         if line[0] == 'eL':                 # for capital L, scroll up until you find an 'h/H'
             for back in range(count):
                 if in_bracs(typed_list[(count - back)][1]) == 'h':
@@ -195,11 +208,12 @@ def reclassify(typed_list, ors):           # takes in full 2nd clean two column 
                 if in_bracs(typed_list[(count - back)][1]) == 'H':
                     line[0] = 'subpara'
                     break
-        if line[0] == 'romanish':           # for ambiguous roman characters, look back one paragraph.
-            back_one = typed_list[(count - 1)]
-            if back_one[0] == 'sub2para' or back_one[0] == 'sub3para':
+
+        if line[0] == 'romanish':           # for ambiguous roman characters
+            back_one = typed_list[(count - 1)]      # first look back one paragraph, that may answer it
+            if back_one[0] == 'sub2para' or back_one[0] == 'sub3para':  # if (i) or (I)...
                 line[0] = 'sub2para'
-            elif back_one[0] == 'subpara':  # if it's a subpara, see if last para matched previous letter in alphabet
+            elif back_one[0] == 'subpara':  # if a subpara (A), did last para (a) match previous letter in alphabet?
                 for back in range(count):
                     if typed_list[back][0] == 'para':
                         if in_bracs(typed_list[(count - back)][1]) == prior_para[in_bracs(line[1])]:
@@ -210,14 +224,15 @@ def reclassify(typed_list, ors):           # takes in full 2nd clean two column 
                             break
             else:
                 line[0] = 'para'
-        if line[0] == 'ROMANISH':           # for ambiguous roman characters, look back one paragraph.
+
+        if line[0] == 'ROMANISH':           # for ambiguous ROMAN characters, look back one paragraph.
             back_one = typed_list[(count - 1)][0]
-            if back_one == 'sub3para':    # if it's a sub3 para, then this too is sub3_para.
+            if back_one == 'sub3para':    # if it's a sub3 para (I), then this too is sub3para (II).
                 line[0] = 'sub3para'
-            elif back_one[0] == 'sub2para':  # if it's a sub2para, did last subpara match previous letter in alphabet?
-                for back in range(count):
+            elif back_one == 'sub2para':  # if a sub2para (i), did last subpara (A) match previous letter?
+                for back in range(count,1, -1):
                     if typed_list[back][0] == 'subpara':
-                        if in_bracs(typed_list[(count - back)][1]) == prior_para[in_bracs(line[1])].upper():
+                        if in_bracs(typed_list[back][1]) == prior_para[in_bracs(line[1]).lower()]:
                             line[0] = 'subpara'
                             break
                         else:
@@ -225,3 +240,6 @@ def reclassify(typed_list, ors):           # takes in full 2nd clean two column 
                             break
             else:
                 line[0] = 'subpara'
+
+        if line[0] == 'dunno':
+            print_err(f'unclassified line ("dunno") remains', f'Line #{count} for {line}')

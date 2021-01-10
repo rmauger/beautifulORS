@@ -1,8 +1,7 @@
 from bs4 import BeautifulSoup       # web scraper
 from urllib import request
 import re
-import requests
-import lxml
+
 
 # Extracts existing ORS chapter from Legislative URL & 'beautifies' it with beautiful soup.
 
@@ -24,7 +23,7 @@ def ors_html_dl(ors):         # from ORS number, returns array for each line
             if len(i.text.strip()) > 3:
                 ors_line = ors_line + '|^' + i.text.strip()   # subtitles
         elif i.select('b'):         # leadlines
-            ors_line = ors_line + '|' + i.text.strip()   # TODO figure out leadlines for 9th time
+            ors_line = ors_line + '|' + i.text.strip()
         else:
             ors_line = ors_line + i.text
     return ors_line
