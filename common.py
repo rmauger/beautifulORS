@@ -1,3 +1,6 @@
+nbsp = u'\xa0'
+
+
 def error_save(func):
     # TODO implement error handling decorator
     def inner_function(*args, **kwargs):
@@ -5,34 +8,28 @@ def error_save(func):
             func(*args, **kwargs)
         except Exception as e:
             err_msg = f'{func.__name__} fed: {args} {kwargs} & returned error: {e}'
-            print_err(e, err_msg)
+            print(err_msg)
             logger('err', err_msg, True)
         return inner_function
 
 
-def print_err(err, context):
-    print(f'ERR: {err} -- {context}')
-
-
-def logger_list(fn, alist):
-    num = 0
-    unpacked = ''
-    for item in alist:
-        if num == 0:
-            unpacked += item
-            num += 1
-        else:
-            unpacked += item + '\n'
-    logger(fn, unpacked, True)
+def logger_list(fn, line, append=True):
+    logger(fn, f'{line[0]}: {line[1]}{nbsp}', True)
 
 
 def logger(fn, txt, append=True):
     if append:
         try:
-            with open(fn+'-log.txt', 'a') as log:
+            with open(fn+'-log.txt', 'r+') as log:
                 log.write(txt)
             return
         except Exception as e:
-            print_err(e, f'Could not open {fn}-log.txt. Writing new.')
+            print(f'Err. {e} Could not open file. Writing new file instead.')
     with open(fn+'-log.txt',  'w') as log:
         log.write(txt)
+
+
+def print_err(err, context):
+    error_msg = f'{err}: {context}{nbsp}'
+    print(error_msg)
+    logger('err', error_msg, True)

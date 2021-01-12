@@ -3,6 +3,8 @@ from classify import in_bracs
 from bs4 import BeautifulSoup
 from common import print_err
 import re
+from common import error_save
+
 
 # global variables
 sec_div, cur_div, form, err, slug = None, None, None, None, None
@@ -119,8 +121,11 @@ def sec_children(line, kid_div):        # if it's a note/source note, it goes wi
 # children of current section:
 def cur_children(line, my_div):
     global err
-    global form
     global slug
+
+    # todo carve out form piece below
+    global form
+    print(line)
     if line[0] == 'form_start':  # trying to create new form box based on parentage
         try:
             form_id = line[2]
@@ -190,6 +195,7 @@ def cur_children(line, my_div):
         return False
 
 
+@error_save
 def sub_levels(depth, parent, text, cls):
     global subs_list
     if in_bracs(text) == start[depth]:

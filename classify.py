@@ -4,7 +4,7 @@
 # -   (Sub2title)
 # - index (table of contents info)
 # - INDEX_SUB (subsection w/in index)
-# -    (index2sub) #TODO double check index_sub2
+# -    (index2sub)
 # - or_sec (sections or note sections)
 # - leadline (leadline explaining ORS section)
 # - slug (ORS paragraph with no subsections)
@@ -31,6 +31,7 @@ prior_para = {
     'v': 'u',
     'x': 'w'}       # letter with its preceeding pair
 nbsp = u'\xa0'
+
 
 def in_bracs(txt):          # takes in string beginning with "(xxx)" and returns xxx as string.
     t = str(txt)
@@ -110,7 +111,7 @@ def typer(type_me, ors):         # takes in line, returns best guess of line typ
     return 'dunno'
 
 
-def reclassify(typed_list, ors):           # takes in full 2nd clean two column list
+def reclassify(typed_list, ors):      # takes in full 2nd clean two column list
     count = -1
     in_form = False
     title = 0
@@ -131,6 +132,7 @@ def reclassify(typed_list, ors):           # takes in full 2nd clean two column 
             line[1] = line[1][1:]
 
         # finding beginning, middle & end of a form
+        # TODO should be own separate function
         if line[0] == 'form_start':
             line[1] = '##'
             if typed_list[count+1][0] == 'form_ start':          # if series of blank lines, not part of form
@@ -152,6 +154,11 @@ def reclassify(typed_list, ors):           # takes in full 2nd clean two column 
                 if line[0] == 'form_start' or line[0] == 'form':
                     pass
                 else:
+                    # TODO make it harder to exit form by only triggering "Not in_form" if intro to form = exit
+                    # todo .. e.g., if form starts (b) Substantially the following form:
+                    # todo .. then can only exit with next #, (c) or source note.
+                    # todo .. Also, querry whether forms might have more nbsp that could be exploited to find out that
+                    # todo .. we're still stuck in a form, even if it might look like a section?
                     in_form = False
 
         if line[0] != 'form' and line[0] != 'index':       # splitting on nbsp when not in form
@@ -197,7 +204,7 @@ def reclassify(typed_list, ors):           # takes in full 2nd clean two column 
                 line[0] = 'note_next'
             else:
                 line[0] = 'note_prev'
-        # TODO depreciate or re-evaluate whether identifying note type can be used successfully
+        # TODO depreciate or re-evaluate whether identifying both v. previous can be used successfully
 
         # Dealing with unique issues involving classifying subdivisions
         if line[0] == 'eL':                 # for capital L, scroll up until you find an 'h/H'
@@ -210,6 +217,7 @@ def reclassify(typed_list, ors):           # takes in full 2nd clean two column 
                     break
 
         if line[0] == 'romanish':           # for ambiguous roman characters
+            # TODO see todos below combine these a little better? Make separate function.
             back_one = typed_list[(count - 1)]      # first look back one paragraph, that may answer it
             if back_one[0] == 'sub2para' or back_one[0] == 'sub3para':  # if (i) or (I)...
                 line[0] = 'sub2para'
@@ -228,9 +236,11 @@ def reclassify(typed_list, ors):           # takes in full 2nd clean two column 
         if line[0] == 'ROMANISH':           # for ambiguous ROMAN characters, look back one paragraph.
             back_one = typed_list[(count - 1)][0]
             if back_one == 'sub3para':    # if it's a sub3 para (I), then this too is sub3para (II).
+                # TODO not necesarily. Should still check. Could be (g), **(h),** (A), (B), (i), (ii), **(i),** (j)...
                 line[0] = 'sub3para'
             elif back_one == 'sub2para':  # if a sub2para (i), did last subpara (A) match previous letter?
-                for back in range(count,1, -1):
+                for back in range(count, 1, -1):
+                    # TODO could probalby use backward count above and for entire piece where we need to look back.
                     if typed_list[back][0] == 'subpara':
                         if in_bracs(typed_list[back][1]) == prior_para[in_bracs(line[1]).lower()]:
                             line[0] = 'subpara'
