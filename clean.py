@@ -1,4 +1,5 @@
 import re
+from common import logger
 
 # variables for unicode decoding
 nbsp = u'\xa0'  # non-breaking space
@@ -29,11 +30,9 @@ def cleaner(dirty_text, ors):
     h = h.replace('| |', '|')
     h = h.replace('||', '|')
     h = sec_start(h, ors)
-    logger('here', h, False)
     h = index(h, ors)
     h = clean_up(h)
     return h
-from common import logger
 
 
 def repl_chars(a):
@@ -41,10 +40,11 @@ def repl_chars(a):
     b = re.sub(fr'({rq}|{lq})', sq, b)
     b = re.sub(fr'({lqq}|{rqq})', sqq, b)
     b = re.sub(r'(_{26,100})([^_])', r'|\g<1>|\g<2>', b)  # picks up long underlines, puts on own line
-    b = re.sub(fr'({hr}+)|({lf}{2,})|( {2,})|({hr2})', r'++', b)
-    b = re.sub(fr'({hr}+)|({lf}{2,})|( {2,})|({hr2})', r' ', b)
-    b = re.sub(fr'({hr}+)|({lf}{2,})|( {2,})|({hr2})', r' ', b)
-    b = re.sub(r'\|\|', r'|', b)
+
+    b = re.sub(fr'({hr}+)|({lf}{{2,}})|( {{2,}})', r' ', b)
+    b = re.sub(fr'({hr}+)|({lf}{{2,}})|( {{2,}})', r' ', b)
+    b = re.sub(fr'({hr}+)|({lf}{{2,}})|( {{2,}})', r' ', b)
+    b = re.sub(r'\|{2,}', r'|', b)
     b = b.replace(lf, '')
     return b
 
@@ -57,39 +57,35 @@ def bracken(a):
     # after the effective date of this 2019 Act [January 1, 2020]. Done by temporarily turning brackets into braces {}
     Converting remaining brackets to leadlines, then converting braces back to brackets.
     """
-    b = re.sub(fr'\[([^\n\t\r]*?([Ff]ormerly |[Rr]enumbered ){anyors}[^\n\t\r]*?)]', r'|[\g<1>]|', a)  # formerly /
-    # renumbered = section_note
-    b = re.sub(fr'\[([^\n\t\r|[]*?{anyors})]',  r'{\g<1>}', b)    # bracketed phrase with ORS numbers (except above)
+    inbrak = r'[^\n\t\r[]|]*?'
+    b = re.sub(fr'\[({inbrak}([Ff]ormerly|[Rr]enumbered)[{nbsp} ]{anyors}{inbrak})]', r'|[\g<1>]|', a)  # formerly /
+    b = re.sub(fr'\[({inbrak}{anyors})]',  r'{\g<1>}', b)    # bracketed phrase with ORS numbers (except above)
     b = re.sub(fr'\[({date})]', r'{\g<1>}', b)      # bracketed dates
-    # TODO debug date checker. Missing February 28, 2019 in ORS 90.
     b = re.sub(fr'\[([{nbsp} ]+)]', r'{\g<1>}', b)   # bracketed forms/blanks
-    b = re.sub(fr'[{nbsp} ]*\[([^\n\t\r|[]{{5, 300}}?)][{nbsp} ]*', r'|[\g<1>]|', b)    # otherwise sec_note
-    b = re.sub(fr'{{([^\n\t\r|[]*?{anyors})}}', r'[\g<1>]', b)  # restores ORS numbers *
+    b = re.sub(fr'[{nbsp} ]*\[([^\n\t\r|[]{{5,400}}?)][{nbsp} ]*', r'|[\g<1>]|', b)    # otherwise sec_note
+    b = re.sub(fr'{{({inbrak}{anyors})}}', r'[\g<1>]', b)  # restores ORS numbers *
     b = re.sub(fr'{{({date})}}', r'[\g<1>]', b)      # replace brackets
     b = re.sub(fr'{{([{nbsp} ]+?)}}', r'[\g<1>]', b)   # replace brackets
-    logger('aft_brk', b, False)
     return b
 
 
 def index(a, ors):
     # finding index (ORS w/ trailing tab & phrase not ending in period)
-    index_match = fr'[\|{nbsp} ]+({ors}\.\d{{3}}){nbsp}{2,} ?([a-zA-Z\0-9"].+?)({nbsp}|\|%)'
+    index_match = fr'[\|{nbsp} ]+({ors}\.\d{{3}}){nbsp}{{2,}} ?([a-zA-Z\0-9"].+?)({nbsp}|\|%)'
     b = re.sub(index_match, r'|%\g<1>|%\g<2>|\g<3>', a)
     b = re.sub(index_match, r'|%\g<1>|%\g<2>|\g<3>', b)
     b = re.sub(index_match, r'|%\g<1>|%\g<2>|\g<3>', b)
-    logger('after_idx', b, False)
     return b
 
 
 def sec_start(a, ors):
-    logger('pre_sec_st', a, False)
     # leadline match = new line + ORS section + more info until period & space (excluding "U.S. ")
-    leadline = fr'\|+[ {nbsp}]{0,2}({ors}\.\d{{3}})[ {nbsp}]?([^\|].+?[a-zA-Z0-9\"][^U.S]\.)[\| {nbsp}]+'
+    leadline = fr'\|+[ {nbsp}]{{0,2}}({ors}\.\d{{3}})[ {nbsp}]?([^\|]+?[a-zA-Z0-9\"][^U.S]\.)[\| {nbsp}]+'
     print(leadline)
     # double amends = new line + ORS section ending with '.' and no leadline
     dam = fr'\|+[ {nbsp}]?({ors}\.\d{{3}}\.)[{nbsp} ]*'
     # session law sections (Sec. xx.)
-    ses_sec = r'Sec\. \d{{1,3}}\.'
+    ses_sec = r'Sec\. \d{1,3}\.'
 
     b = re.sub(dam, r'|@\g<1>|!', a)
     # TODO any way to make this work for double amended temp sections (e.g., Sec. 22, c 105, 2018 in chp 98)
@@ -98,17 +94,18 @@ def sec_start(a, ors):
     b = re.sub(leadline, r'|\g<1>|#\g<2>|!', b)
 
     '''if session law intro has a leadline, it should have a period before next line break. E.g., Sec. 2. Defintions.'''
-    b = re.sub(fr'({ses_sec})[{nbsp} ]+(([^|\n\t\r]){{5,55}}?\.)[{nbsp} |]+', r'|\g<1>|#\g<2>|!', b)  # with leadlines
-    b = re.sub(fr'({ses_sec})[{nbsp} ]+\|*', r'|\g<1>|!', b)  # without leadlines
+    print(fr'({ses_sec})[{nbsp} ]+([^|\n\t\r]{{5,55}}?\.)[{nbsp} |]+')
+    b = re.sub(fr'({ses_sec})[{nbsp} ]+([^|\n\t\r]{{5,55}}?\.)[{nbsp} |]+', r'|\g<1>|#\g<2>|!', b)  # with leadlines
+    b = re.sub(fr'({ses_sec})[{nbsp} ]+\|*', r'|\g<1>|!', b)    # without leadlines
     # TODO Note sections 'sometimes' have double amends - no obvious solution here, maybe in classifying
-    logger('post_sec_st', b, False)
+    b = re.sub(r'!+', r'!', b)
     return b
 
 
 def clean_up(a):
-    b = re.sub(fr'\|[ ]?{nbsp}{nbsp}+\(', r'|(', a)  # todo - can this be moved down? deleting leading spaces for depth
-    b = re.sub(r'\|!\(1\)', r'|(1)', b)  # deleting leading ! for subsection after leadline
-    b = re.sub(fr'{nbsp}{nbsp}+ ?([a-zA-Z0-9_,;\-\'\"(])', r'|\g<1>', b)  # TODO necessary? working? breaking forms?
+    b = re.sub(fr'\|[ ]?{nbsp}{{2,}}\(', r'|(', a)  # todo - can this be moved down? deleting leading spaces for depth
+    b = re.sub(r'\| *!+ *\(1\)', r'|(1)', b)  # deleting leading ! for subsection after leadline
+    b = re.sub(fr'{nbsp}{{2,}} ?([a-zA-Z0-9_,;\-\'\"(])', r'|\g<1>', b)  # TODO necessary? working? breaking forms?
     b = b.replace('| (', '|(')
 
     # pulling out leading double parentheses (e.g. (1)(a) or (d)(A) (e)(A)(i), etc.

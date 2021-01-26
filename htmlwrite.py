@@ -60,14 +60,14 @@ def build_sections(sections_list, mn):
 
     for line in sections_list[1:]:
         counter += 1
-        if line[0] == 'subtitle':
+        if line[0] == 'index' or line[0] == 'index_sub' or line[0] == 'index2sub':
+            pass
+        elif line[0] == 'subtitle':
             mn.h3(line[1], class_='subtitle')
         elif line[0] == 'sub2title':
             mn.h4(line[1], class_='sub2title')
         elif line[0] == 'or_sec':
             sec_div = mn.div(id=line[1], class_='section')
-            # TODO split ors sec from session law secs & remove ID
-            # ..todo see notes in clean.py
             ll = sec_div.p(line[1], class_='or_sec')
             err = None
             cur_div = sec_div
@@ -91,15 +91,13 @@ def build_sections(sections_list, mn):
                 pass
             elif cur_children(line, cur_div):
                 pass
-            elif line[0] == 'index' or line[0] == 'index_sub' or line[0] == 'index2sub':
-                pass
             else:
                 print_err('HTML not generated', f'For {line}')
 
 
 def reboot_cur():
     pass
-    # TODO consider rebooting subsections to prevent overtyping (perhaps at source note):
+    # TODO consider rebooting subsections to prevent overtyping (perhaps if source note, kill sections):
     # todo .. including subs_list = [0, 0, 0, 0, 0]
     # todo .. would then need to modify the creation of subs to handle potential errors
     # todo .. but would get more right and at least nothing wrong
@@ -112,8 +110,9 @@ def sec_children(line, kid_div):        # if it's a note/source note, it goes wi
         return True
     elif line[0] == 'note_prev' or line[0] == 'note_both':
         kid_div.p(line[1], class_='note')
+        '''TODO note_both can probably be depreciate after confirming with some more note examples first
+        see classify.py note on this issue'''
         return True
-        # todo note_both can probably be depreciate after confirming with some more note examples first
     else:
         return False
 
@@ -122,24 +121,22 @@ def sec_children(line, kid_div):        # if it's a note/source note, it goes wi
 def cur_children(line, my_div):
     global err
     global slug
-
     # todo carve out form piece below
     global form
-    print(line)
     if line[0] == 'form_start':  # trying to create new form box based on parentage
         try:
             form_id = line[2]
-            if form_id == 'slug':
+            if form_id == 0:
                 form = slug.div(class_='form-box')
-            elif form_id == 'subsec':
+            elif form_id == 1:
                 form = subs_list[0].div(class_='form-box')
-            elif form_id == 'para':
+            elif form_id == 2:
                 form = subs_list[1].div(class_='form-box')
-            elif form_id == 'subpara':
+            elif form_id == 3:
                 form = subs_list[2].div(class_='form-box')
-            elif form_id == 'sub2para':
+            elif form_id == 4:
                 form = subs_list[3].div(class_='form-box')
-            elif form_id == 'sub3para':
+            elif form_id == 5:
                 form = subs_list[4].div(class_='form-box')
             else:
                 form = my_div.div(line[1], class_='form-box')
@@ -147,6 +144,7 @@ def cur_children(line, my_div):
         except Exception as e:
             print_err({e}, f'form failed at {line}')
         return True
+    # // end form carve out
     elif line[0] == 'slug':
         slug = my_div.p(line[1], class_='slug')
         return True
@@ -176,35 +174,33 @@ def cur_children(line, my_div):
         except Exception as e:
             print_err(e, f' adding to existing err message failed for {line}')
         return True
-    elif line[0] == 'subsec':
+    elif line[0] == 1:
         sub_levels(0, my_div, line[1], line[0])
         return True
-    elif line[0] == 'para':
+    elif line[0] == 2:
         sub_levels(1, subs_list[0], line[1], line[0])
         return True
-    elif line[0] == 'subpara':
+    elif line[0] == 3:
         sub_levels(2, subs_list[1], line[1], line[0])
         return True
-    elif line[0] == 'sub2para':
+    elif line[0] == 4:
         sub_levels(3, subs_list[2], line[1], line[0])
         return True
-    elif line[0] == 'sub3para':
+    elif line[0] == 5:
         sub_levels(4, subs_list[3], line[1], line[0])
         return True
     else:
         return False
 
 
-@error_save
 def sub_levels(depth, parent, text, cls):
-    global subs_list
+    #  global subs_list
     if in_bracs(text) == start[depth]:
         subs_list[depth] = parent.ol(class_=cls)
     try:
         subs_list[depth].li(text)
     except Exception as e:
         print_err(e, f'Couldn\'t add {cls} with depth {depth} for: {text}')
-    # subsections:
 
 
 def write_html(html_doc):
