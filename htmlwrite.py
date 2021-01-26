@@ -196,7 +196,7 @@ def cur_children(line, my_div):
 def sub_levels(depth, parent, text, cls):
     #  global subs_list
     if in_bracs(text) == start[depth]:
-        subs_list[depth] = parent.ol(class_=cls)
+        subs_list[depth] = parent.ol(class_='lvl' + str(cls))
     try:
         subs_list[depth].li(text)
     except Exception as e:

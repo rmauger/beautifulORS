@@ -1,0 +1,93 @@
+* {
+	max-width:1000px;
+}
+h1.title {
+	text-align:center;
+}
+.toc {
+color: white;
+	background-color: rgb(10, 30, 90);
+	border-style: none;
+	width: 80%;
+	margin: auto;
+	padding: 3% 3%;
+}
+a.toca:link {
+	color: rgb(242, 180, 50);
+}
+a.toca:visited {
+	color: rgb(242, 100, 30);
+}
+.section {
+	margin-top: 8px;
+	margin-bottom: 6px;
+	border-style: solid none none none;
+}
+.slug {
+	margin-left: 15px;
+	text-indent: -10px;
+	margin-top: 6px;
+	margin-bottom: 6px;
+}
+.source_note {
+	color: rgb(80, 80, 140);
+	margin-top:0;
+}
+
+.main {
+	padding: 3% 3%;
+	color: black;
+	background-color: rgb(248, 240, 220);
+}
+.or_sec {
+	font-weight:bold;
+}
+.leadline{
+	font-weight:bold;
+	color: rgb(20, 40, 80);
+}
+ol {
+	list-style: none;
+	list-style-position: outside;
+}
+ol > li {
+	list-style-position: outside;
+}
+ol.subsec {
+	counter-reset:list1;
+	margin-left: 10x;
+	list-style-position: outside;
+}
+ol.subsec > li:before {
+	counter-increment: list1;
+	content: "("counter(list1, decimal) ") ";
+	list-style-position: outside;
+}
+ol.para {
+	counter-reset:lista;
+}
+ol.para > li:before {
+	counter-increment: lista;
+	content: "("counter(lista, lower-alpha) ") ";
+}
+ol.subpara {
+	counter-reset:listU;
+}
+ol.subpara > li:before {
+	counter-increment: listU;
+	content: "("counter(listU, upper-alpha) ") ";
+}
+ol.sub2para {
+	counter-reset:listi;
+}
+ol.sub2para > li:before {
+	counter-increment: listi;
+	content: "("counter(listi, lower-roman) ") ";
+}
+ol.sub3para {
+	counter-reset:listR;
+}
+ol.sub3para > li:before {
+	counter-increment: listR;
+	content: "("counter(listR, upper-roman) ") ";
+}

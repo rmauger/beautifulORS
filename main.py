@@ -17,8 +17,8 @@ with open('ors_raw.txt', 'w') as raw:  # DEBUGGING
 
 first_clean = cleaner(soup_ors, chp)               # pass document through initial cleaner
 
- #saving ORS after first time through the cleaner
-logger('clean1', first_clean, False)
+''' #saving ORS after first time through the cleaner
+logger('clean1', first_clean, False)'''
 
 for clean_line in first_clean.split('|'):               # first attempt to guess type after split based on pipes
     if len(str(clean_line).strip()) > 1:                             # for pieces longer than character
@@ -45,9 +45,9 @@ for delme in range(len(clean_ors)-1, 0, -1):         # last cleanup, getting rid
 # TODO Create function by which subsection can identify its history, add it to its mouseover?
 # todo ...started on this project, in classify. Probably also needs broken out into new module.
 
-#saving ORS after final clean up
+'''#saving ORS after final clean up
 for nl in clean_ors:
-    logger_list('clean3', nl)
+    logger_list('clean3', nl)'''
 
 ''' ***********************
 # # Temp piece backward engineering 'clean_ors" from .txt
