@@ -11,14 +11,14 @@ def get_html(ors):
     if ors_chp[-1] == 'A' or ors_chp[-1] == 'B' or ors_chp[-1] == 'C':  # don't count trailing A, B or C (e.g., ORS 72A)
         length -= 1
     ans = ors_chp
-    for i in range(3-length):
+    for _ in range(3-length):
         ans = '0' + ans
     return fr'https://www.oregonlegislature.gov/bills_laws/ors/ors{ans}.html'
 
 
 def ors_html_dl(ors_url):
     dl_ors = BeautifulSoup(request.urlopen(ors_url).read(), 'html.parser')  # TODO happy with parser? something easier?
-    dl_ors.smooth()
+    # dl_ors.smooth()    # depreciating at least temporarily. Not seeming to work on Pi.
     ors_line = ""
     for i in dl_ors.find_all('p', class_='MsoNormal'):          # extract line from html
         if re.search('align="center"', str(i)):
