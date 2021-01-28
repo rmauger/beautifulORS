@@ -57,8 +57,9 @@ def bracken(a):
     # after the effective date of this 2019 Act [January 1, 2020]. Done by temporarily turning brackets into braces {}
     Converting remaining brackets to leadlines, then converting braces back to brackets.
     """
-    inbrak = r'[^\n\t\r[]|]*?'
-    b = re.sub(fr'\[({inbrak}([Ff]ormerly|[Rr]enumbered)[{nbsp} ]{anyors}{inbrak})]', r'|[\g<1>]|', a)  # formerly /
+    inbrak = r'[^\n\t\r[]|]*?'   # things that would indicate new set of brackets has started & cancels search
+    b = re.sub(fr'\[({inbrak}([Ff]ormerly|[Rr]enumbered)[{nbsp} ]{anyors}{inbrak})]', r'|[\g<1>]|', a)  # frmr / rnbrd
+    # todo renumbered should have "in" following if in source note
     b = re.sub(fr'\[({inbrak}{anyors})]',  r'{\g<1>}', b)    # bracketed phrase with ORS numbers (except above)
     b = re.sub(fr'\[({date})]', r'{\g<1>}', b)      # bracketed dates
     b = re.sub(fr'\[([{nbsp} ]+)]', r'{\g<1>}', b)   # bracketed forms/blanks
@@ -80,7 +81,7 @@ def index(a, ors):
 
 def sec_start(a, ors):
     # leadline match = new line + ORS section + more info until period & space (excluding "U.S. ")
-    leadline = fr'\|+[ {nbsp}]{{0,2}}({ors}\.\d{{3}})[ {nbsp}]?([^\|]+?[a-zA-Z0-9\"][^U.S]\.)[\| {nbsp}]+'
+    leadline = fr'\|+[ {nbsp}]{{0,2}}({ors}\.\d{{3}})[ {nbsp}]?([^\|]+?[a-zA-Z0-9\"][^U.S]\.)\"?[\| {nbsp}]+'
     print(leadline)
     # double amends = new line + ORS section ending with '.' and no leadline
     dam = fr'\|+[ {nbsp}]?({ors}\.\d{{3}}\.)[{nbsp} ]*'

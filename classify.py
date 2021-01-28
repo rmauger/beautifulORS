@@ -66,7 +66,7 @@ def typer(type_me, chp):         # takes in line, returns best guess of line typ
     elif txt[0] == '@':
         return 'da_sec'
     elif txt[0] == '!':
-        return 'slug'
+        return 0
     elif re.search(r'Note( \d{1,2})?: ', txt[0:9]):
         return 'note_sec'
     elif txt[0:5] == 'Sec. ':
@@ -121,6 +121,27 @@ def typer(type_me, chp):         # takes in line, returns best guess of line typ
     return 'dunno'
 
 
+def reclassify(typed_list):      # takes in full 2nd clean two column list
+    global ors
+    global in_form
+    global count
+    count = -1
+    in_form = False
+    for line in typed_list:           # iterate through typed list to fix pieces
+        count += 1                    # keeping own counter to match index (0 to end)
+        if (line[0] == 0 or line[0] == 'index' or line[0] == 'leadline' or line[0] == 'form' or
+                line[0] == 'subtitle' or line[0] == 'da_sec' or line[0] == 'title') and not \
+                re.search(r'[a-zA-Z0-9(\"]', line[1][0]):
+            line[1] = line[1][1:]               # get rid of line intro trigger '!, %, ^, @ or #'
+
+        check_form(line, typed_list)
+        check_index(line, typed_list)
+        check_note(line)
+        line[0] = fix_subs(line[0], typed_list)
+        if str(line[0]).isnumeric():                    # adds full cite to item
+            line.append(get_cite(typed_list, count))
+
+
 def check_form(fl, lst):   # checks *formline* to determine if in form, based in part on surrounding members of *list*
     global in_form
     global count
@@ -132,15 +153,14 @@ def check_form(fl, lst):   # checks *formline* to determine if in form, based in
         if lst[count+1][0] == 'form_ start':          # if series of blank lines, not part of form
             num = 1
             while lst[count + num][0] == 'form_start':
-                lst[count + num][0] = 'slug'
+                lst[count + num][0] = 0
                 num += 1
-            lst[count + num][0] = 'slug'     # pick up the last one outside the while loop
+            lst[count + num][0] = 0     # pick up the last one outside the while loop
         else:
             if in_form:
                 fl[0] = 'form'                    # don't try to start a new form if we're already in one
             else:
                 form_starter = lst[count - 1]
-                print(form_starter)
                 fl.append(form_starter[0])     # puts parent type into form data (3rd slot)
                 parenmatch = r'\(.\)'
                 mycite = get_cite(lst, count-1)
@@ -158,7 +178,7 @@ def check_form(fl, lst):   # checks *formline* to determine if in form, based in
                         pass  # todo is there any possible way to add roman numerals (could just make a library/list?)
         in_form = True
     if in_form:
-        if fl[0] == 'subtitle' or fl[0] == 'sub2title' or fl[0] == 'dunno' or fl[0] == 'slug':
+        if fl[0] == 'subtitle' or fl[0] == 'sub2title' or fl[0] == 'dunno' or fl[0] == 0:
             fl[0] = 'form'
         else:  # check to see if next depth or a new section / source note that will end our form
             if str(fl[0]).isnumeric:
@@ -182,6 +202,7 @@ def check_form(fl, lst):   # checks *formline* to determine if in form, based in
             for i in fl[1].split(nbsp):
                 if num > 0:
                     lst.insert(count+num, [typer(i, ors), i])
+                    # todo if typer returns a "dunno" change nbsp to space & remerge lines?
                 num += 1
             fl[1] = fl[1].split(nbsp)[0]
 
@@ -192,7 +213,6 @@ def get_cite(alist, cnt):
         num = 0
         while True:
             if alist[cnt-1-num][0] == findme:
-                print(alist[cnt-1-num])
                 if (in_bracs(alist[cnt-1-num][1])) is None:
                     return alist[cnt-1-num][1]
                 else:
@@ -208,13 +228,10 @@ def get_cite(alist, cnt):
         if alist[cnt][0] == i:
             my_cite = f'({in_bracs(alist[cnt][1])}){my_cite}'
     section = back_track('or_sec')
-    print(f'My_cite = {my_cite}')
-    print(f'My section = {section}')
     if re.search(r'\d{1,3}[A-C]?\.\d{3,4}', section):
         my_cite = f'ORS {section} {my_cite}'
     else:
         my_cite = f'Sec. {section}. {my_cite}'
-    print(my_cite)
     return my_cite
 
 
@@ -265,92 +282,45 @@ def del_intro(typed_list):
             del_on = True
 
 
-'''        if line[0] == 'title':        # make sure title is unique and on line 0
-            print('title found...')
-            if title == 0:
-                title = 1
-                print(f'Title found at {count}: {line}')
-                if count > 0:
-                    for i in typed_list[0:count]:
-                        print(i)
-                        typed_list.remove(i)'''
-
-
-def reclassify(typed_list):      # takes in full 2nd clean two column list
-    global ors
-    global in_form
-    global count
-    count = -1
-    in_form = False
-    for line in typed_list:           # iterate through typed list to fix pieces
-        count += 1                    # keeping own counter
-
-        if (line[0] != 'slug' and line[0] != 'index' and line[0] != 'leadline' and line[0] != 'form'
-                and line[0] != 'subtitle' and line[0] != 'da_sec' and line[0] != 'title') or \
-                re.search(r'[a-zA-Z0-9(\"]', line[1][0]):
-            if count == 0:
-                print(line[1][1:])
-                print(line[0] != 'slug')
-                print(line[0] != 'index')
-                print(line[0] != 'leadline')
-                print(line[0] != 'form')
-                print(line[0] != 'subtitle')
-                print(line[0] != 'da_sec')
-                print(line[1][0])
-                print('\n')
-        else:  # get rid of line intro trigger '!, %, ^, @ or #'
-            if count == 0:
-                print(line[1][1:])
-            line[1] = line[1][1:]
-        check_form(line, typed_list)
-        check_index(line, typed_list)
-        check_note(line)
-
-        # Dealing with unique issues involving classifying subdivisions
-        if line[0] == 'eL':                 # for capital L, scroll up until you find an 'h/H'
+def fix_subs(cur, lst):
+    if cur == 'eL':  # for capital L, scroll up until you find an 'h/H'
+        for back in range(count):
+            if in_bracs(lst[(count - back)][1]) == 'h':
+                return 2
+            if in_bracs(lst[(count - back)][1]) == 'H':
+                return 3
+    elif cur == 'romanish':  # for ambiguous roman characters
+        # TODO see todos below combine these a little better? Make separate function.
+        back_one = lst[(count - 1)]  # first look back one paragraph, that may answer it
+        if back_one[0] == 4 or back_one[0] == 5:  # if (i) or (I)...
+            return 4
+        elif back_one[0] == 3:  # if a subpara (A), did last para (a) match previous letter in alphabet?
             for back in range(count):
-                if in_bracs(typed_list[(count - back)][1]) == 'h':
-                    line[0] = 2
-                    break
-                if in_bracs(typed_list[(count - back)][1]) == 'H':
-                    line[0] = 3
-                    break
-
-        if line[0] == 'romanish':           # for ambiguous roman characters
-            # TODO see todos below combine these a little better? Make separate function.
-            back_one = typed_list[(count - 1)]      # first look back one paragraph, that may answer it
-            if back_one[0] == 4 or back_one[0] == 5:  # if (i) or (I)...
-                line[0] = 4
-            elif back_one[0] == 3:  # if a subpara (A), did last para (a) match previous letter in alphabet?
-                for back in range(count):
-                    if typed_list[back][0] == 2:
-                        if in_bracs(typed_list[(count - back)][1]) == prior_para[in_bracs(line[1])]:
-                            line[0] = 2            # e.g., (i) is just a para after (h)
-                            break
-                        else:
-                            line[0] = 4       # e.g., (i) is start of roman numeral list i, ii, iii...
-                            break
-            else:
-                line[0] = 2
-
-        if line[0] == 'ROMANISH':           # for ambiguous ROMAN characters, look back one paragraph.
-            back_one = typed_list[(count - 1)][0]
-            if back_one == 5:    # if it's a sub3 para (I), then this too is sub3para (II).
-                # TODO not necesarily. Should still check. Could be (g), **(h),** (A), (B), (i), (ii), **(i),** (j)...
-                line[0] = 5
-            elif back_one == 4:  # if a sub2para (i), did last subpara (A) match previous letter?
-                for back in range(count, 1, -1):
-                    # TODO could probalby use backward count above and for entire piece where we need to look back.
-                    # todo see back_track function elsewhere & maybe incorporate it
-                    if typed_list[back][0] == 3:
-                        if in_bracs(typed_list[back][1]) == prior_para[in_bracs(line[1]).lower()]:
-                            line[0] = 3
-                            break
-                        else:
-                            line[0] = 5
-                            break
-            else:
-                line[0] = 3
-
-        if line[0] == 'dunno':
-            print_err(f'unclassified line ("dunno") remains', f'Line #{count} for {line}')
+                if lst[back][0] == 2:
+                    if in_bracs(lst[(count - back)][1]) == prior_para[in_bracs(lst[count][1])]:
+                        return 2  # e.g., (i) is just a para after (h)
+                    else:
+                        return 4  # e.g., (i) is start of roman numeral list i, ii, iii...
+        else:
+            return 2
+    elif cur == 'ROMANISH':  # for ambiguous ROMAN characters, look back one paragraph.
+        back_one = lst[(count - 1)][0]
+        if back_one == 5:  # if it's a sub3 para (I), then this too is sub3para (II).
+            # TODO not necesarily. Should still check. Could be (g), **(h),** (A), (B), (i), (ii), **(i),** (j)...
+            return 5
+        elif back_one == 4:  # if a sub2para (i), did last subpara (A) match previous letter?
+            for back in range(count, 1, -1):
+                # TODO could probalby use backward count above and for entire piece where we need to look back.
+                # todo see back_track function elsewhere & maybe incorporate it
+                if lst[back][0] == 3:
+                    if in_bracs(lst[back][1]) == prior_para[in_bracs(lst[count][1]).lower()]:
+                        return 3
+                    else:
+                        return 5
+        else:
+            return 3
+    elif cur == 'dunno':
+        print_err(f'unclassified line ("dunno") remains', f'Line #{count} for {cur}')
+        return cur
+    else:
+        return cur

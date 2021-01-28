@@ -33,6 +33,6 @@ def logger(fn, txt, append=True):
 
 
 def print_err(err, context):
-    error_msg = f'{err}: {context}{nbsp}'
+    error_msg = f'{err}: {context}{hr}'
     print(error_msg)
     logger('err', error_msg, True)

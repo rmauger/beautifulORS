@@ -87,7 +87,8 @@ h4 {
 		margin: 0px 10px 10px 10px;
 		padding: 0px 8px 2px 8px;
 		border: none;
-		font-style: italic;
+		font-size: 80%;
+		color: rgb(90, 20, 20);
 	}
 	.section .alternate .note {
 		margin: 20px 32px 0px 32px;
@@ -123,6 +124,7 @@ h4 {
 		font-weight:bold;
 		margin: 6px 0px 6px 0px;
 		padding:inherit;
+		color: rgb(14, 44, 104);
 	}
 
 	.section .slug {
@@ -131,8 +133,9 @@ h4 {
 	}
 
 	.section .source_note {
-		color: rgb(80, 80, 140);
+		color: rgb(100, 80, 160);
 		margin: 0px 0px 5px 0px;
+		font-size: 90%
 	}
 
 	.section .unknown {

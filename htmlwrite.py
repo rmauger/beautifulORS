@@ -8,9 +8,9 @@ from common import error_save
 
 # global variables
 sec_div, cur_div, form, err, slug = None, None, None, None, None
-subs_list = [0, 0, 0, 0, 0]
-start = ('1', 'a', 'A', 'i', 'I')
-
+subs_list = [0, 0, 0, 0, 0]             # depths that can exist
+# global constants
+start = ('1', 'a', 'A', 'i', 'I')       # things that start a new subdepth
 
 def html_builder(ors_list, chp):
     h = HTML(newlines=True)
@@ -92,13 +92,34 @@ def build_sections(sections_list, mn):
             elif cur_children(line, cur_div):
                 pass
             else:
-                print_err('HTML not generated', f'For {line}')
+                print_err('Generated HTML for unclassified line', f'For {line}')
+                if err is None:
+                    try:
+                        err = cur_div.div(class_='unknown')
+                    except Exception as e:
+                        print_err(e, f'creating new error div failed for {line}')
+                        err = mn.div(class_='unknown')
+                    err.p("** WARNING ** ", style='font-weight:bold;;text-align:center')
+                    err.p("Lines below are part of this section, but may not have parsed correctly.",
+                          style='font-weight:bold; text-align: center')
+                    ptemp = err.p("View original from the ",
+                                  style='font-weight:bold:;text-align: center; margin-bottom: 20px')
+                    ptemp.a('Oregon Legislature Website',
+                            href='https://www.oregonlegislature.gov/bills_laws/Pages/ORS.aspx')
+                    ptemp += '.'
+                try:
+                    err.p(line[1])
+                except Exception as e:
+                    print_err(e, f' adding to existing err message failed for {line}')
 
 
 def reboot_cur():
-    pass
+    global err
+    global subs_list
+    err = None
+    subs_list = [0, 0, 0, 0, 0]
+
     # TODO consider rebooting subsections to prevent overtyping (perhaps if source note, kill sections):
-    # todo .. including subs_list = [0, 0, 0, 0, 0]
     # todo .. would then need to modify the creation of subs to handle potential errors
     # todo .. but would get more right and at least nothing wrong
 
@@ -109,9 +130,8 @@ def sec_children(line, kid_div):        # if it's a note/source note, it goes wi
         kid_div.p(line[1], class_='source_note')
         return True
     elif line[0] == 'note_prev' or line[0] == 'note_both':
+        # TODO note_both can probably be depreciated after confirming with some examples; see classify.py notes
         kid_div.p(line[1], class_='note')
-        '''TODO note_both can probably be depreciate after confirming with some more note examples first
-        see classify.py note on this issue'''
         return True
     else:
         return False
@@ -121,13 +141,15 @@ def sec_children(line, kid_div):        # if it's a note/source note, it goes wi
 def cur_children(line, my_div):
     global err
     global slug
+
     # todo carve out form piece below
     global form
     if line[0] == 'form_start':  # trying to create new form box based on parentage
         try:
-            form_id = line[2]
+            form_id = line[2]  # pulls in parent of form type from prior line todo: although why not just do that now?
             if form_id == 0:
                 form = slug.div(class_='form-box')
+            # todo simplify below
             elif form_id == 1:
                 form = subs_list[0].div(class_='form-box')
             elif form_id == 2:
@@ -145,8 +167,9 @@ def cur_children(line, my_div):
             print_err({e}, f'form failed at {line}')
         return True
     # // end form carve out
-    elif line[0] == 'slug':
-        slug = my_div.p(line[1], class_='slug')
+
+    elif line[0] == 0:
+        slug = my_div.p(line[1], class_='flush')
         return True
     elif line[0] == 'form':
         try:
@@ -154,53 +177,27 @@ def cur_children(line, my_div):
         except Exception as e:
             print_err({e}, f'attempted to add form from {line} to form box')
         return True
-    elif line[0] == 'dunno':
-        print_err('Generated HTML for unclassified line', f'For {line}')
-        if err is None:
-            try:
-                err = my_div.div(class_='unknown')
-                err.p("** WARNING ** ", style='font-weight:bold;;text-align:center')
-                err.p("Lines below are part of this section, but may not have parsed correctly.",
-                      style='font-weight:bold; text-align: center')
-                ptemp = err.p("View original from the ",
-                              style='font-weight:bold:;text-align: center; margin-bottom: 20px')
-                ptemp.a('Oregon Legislature Website',
-                        href='https://www.oregonlegislature.gov/bills_laws/Pages/ORS.aspx')
-                ptemp += '.'
-            except Exception as e:
-                print_err(e, f'creating new error div failed for {line}')
-        try:
-            err.p(line[1])
-        except Exception as e:
-            print_err(e, f' adding to existing err message failed for {line}')
-        return True
-    elif line[0] == 1:
-        sub_levels(0, my_div, line[1], line[0])
-        return True
-    elif line[0] == 2:
-        sub_levels(1, subs_list[0], line[1], line[0])
-        return True
-    elif line[0] == 3:
-        sub_levels(2, subs_list[1], line[1], line[0])
-        return True
-    elif line[0] == 4:
-        sub_levels(3, subs_list[2], line[1], line[0])
-        return True
-    elif line[0] == 5:
-        sub_levels(4, subs_list[3], line[1], line[0])
-        return True
-    else:
-        return False
+    elif str(line[0]).isnumeric():
+        if line[0] == 1:
+            return sub_levels(0, my_div, line)
+        if 2 <= line[0] <= 5:
+            return sub_levels(line[0]-1, subs_list[line[0]-2], line)
 
 
-def sub_levels(depth, parent, text, cls):
+def sub_levels(depth, parent, data):   #  text, cls):
     #  global subs_list
-    if in_bracs(text) == start[depth]:
-        subs_list[depth] = parent.ol(class_='lvl' + str(cls))
+    if in_bracs(data[1]) == start[depth]:
+        try:
+            subs_list[depth] = parent.ol(class_='lvl' + str(data[0]))
+        except Exception as e:
+            print_err(e, f'Couldn\'t add new depth {depth} for #{data[0]} for: {data[1]} at {data[2]}')
+            return False
     try:
-        subs_list[depth].li(text)
+        subs_list[depth].li(data[1],title=str(data[2]))
+        return True
     except Exception as e:
-        print_err(e, f'Couldn\'t add {cls} with depth {depth} for: {text}')
+        print_err(e, f'Couldn\'t add {data[0]} with depth {depth} for: {data[2]}')
+        return False
 
 
 def write_html(html_doc):
