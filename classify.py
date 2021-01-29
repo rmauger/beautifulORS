@@ -1,24 +1,26 @@
-# classifies ORS lines into categories:
-# - title (unique, should be "Chapter XXX -- TITLE')
-# - SUBTITLE
-# -   (Sub2title)
-# - index (table of contents info)
-# - INDEX_SUB (subsection w/in index)
-# -    (index2sub)
-# - or_sec (sections or note sections)
-# - leadline (leadline explaining ORS section)
-# - 0 slug (ORS paragraph with no subsections)
-# - 1 (1) subsec (hierachy of indentation, digits)
-#   - 2 (a) para  (lower alphabet (except 'L')
-#     - 3 (A) subpara  (upper alphabet)
-#       - 4 (i) sub2para  (lower roman)
-#         - 5 (I) sub3para  (upper roman)
-# - form_start  (most likely a form or table within the chapter)
-# -   form
-# - form_end    (end of form)
-# - note_sec  (notes between sections)
-# - source_note  (legislative history)
-# - dunno (unclassified)
+'''classifies ORS lines into categories:
+- title (unique, should be "Chapter XXX -- TITLE')
+- SUBTITLE
+-   (Sub2title)
+- index (table of contents info)
+- INDEX_SUB (subsection w/in index)
+-    (index2sub)
+- or_sec (sections or note sections)
+- leadline (leadline explaining ORS section)
+- 0 slug (ORS paragraph with no subsections)
+- 1 (1) subsec (hierachy of indentation, digits)
+  - 2 (a) para  (lower alphabet (except 'L')
+    - 3 (A) subpara  (upper alphabet)
+      - 4 (i) sub2para  (lower roman)
+        - 5 (I) sub3para  (upper roman)
+- form_start  (most likely a form or table within the chapter)
+-   form
+- form_end    (end of form)
+- note_sec  (notes between sections)
+- source_note  (legislative history)
+- dunno (unclassified)'''
+
+
 import re
 from common import print_err
 

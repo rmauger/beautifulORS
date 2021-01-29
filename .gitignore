@@ -1,2 +1,9 @@
 new_html.html
 .vscode/launch.json
+__pycache__/classify.cpython-38.pyc
+__pycache__/common.cpython-38.pyc
+html3/__pycache__/__init__.cpython-38.pyc
+__pycache__/clean.cpython-38.pyc
+__pycache__/htmlwrite.cpython-38.pyc
+__pycache__/ors_dl.cpython-38.pyc
+html3/html3.py

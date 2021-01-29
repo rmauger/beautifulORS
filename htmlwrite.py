@@ -8,7 +8,7 @@ from common import error_save
 
 # global variables
 sec_div, cur_div, form, err, slug = None, None, None, None, None
-subs_list = [0, 0, 0, 0, 0]             # depths that can exist
+subs_list = [HTML(), HTML(), HTML(), HTML(), HTML()]             # depths that can exist
 # global constants
 start = ('1', 'a', 'A', 'i', 'I')       # things that start a new subdepth
 
@@ -117,11 +117,7 @@ def reboot_cur():
     global err
     global subs_list
     err = None
-    subs_list = [0, 0, 0, 0, 0]
-
-    # TODO consider rebooting subsections to prevent overtyping (perhaps if source note, kill sections):
-    # todo .. would then need to modify the creation of subs to handle potential errors
-    # todo .. but would get more right and at least nothing wrong
+    subs_list = [HTML(), HTML(), HTML(), HTML(), HTML()] 
 
 
 # children of original section:
@@ -149,17 +145,10 @@ def cur_children(line, my_div):
             form_id = line[2]  # pulls in parent of form type from prior line todo: although why not just do that now?
             if form_id == 0:
                 form = slug.div(class_='form-box')
-            # todo simplify below
-            elif form_id == 1:
-                form = subs_list[0].div(class_='form-box')
-            elif form_id == 2:
-                form = subs_list[1].div(class_='form-box')
-            elif form_id == 3:
-                form = subs_list[2].div(class_='form-box')
-            elif form_id == 4:
-                form = subs_list[3].div(class_='form-box')
-            elif form_id == 5:
-                form = subs_list[4].div(class_='form-box')
+            # TODO simplify below
+            elif str(form_id).isnumeric():
+                if 1 <= form_id <= 5:
+                    form = subs_list[form_id-1].div(class_='form-box')
             else:
                 form = my_div.div(line[1], class_='form-box')
                 print_err(f'Form not created within section text', f'at {line}')
@@ -185,7 +174,7 @@ def cur_children(line, my_div):
 
 
 def sub_levels(depth, parent, data):   #  text, cls):
-    #  global subs_list
+    global subs_list
     if in_bracs(data[1]) == start[depth]:
         try:
             subs_list[depth] = parent.ol(class_='lvl' + str(data[0]))
