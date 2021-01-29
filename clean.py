@@ -82,7 +82,6 @@ def index(a, ors):
 def sec_start(a, ors):
     # leadline match = new line + ORS section + more info until period & space (excluding "U.S. ")
     leadline = fr'\|+[ {nbsp}]{{0,2}}({ors}\.\d{{3}})[ {nbsp}]?([^\|]+?[a-zA-Z0-9\"][^U.S]\.)\"?[\| {nbsp}]+'
-    print(leadline)
     # double amends = new line + ORS section ending with '.' and no leadline
     dam = fr'\|+[ {nbsp}]?({ors}\.\d{{3}}\.)[{nbsp} ]*'
     # session law sections (Sec. xx.)
@@ -95,7 +94,6 @@ def sec_start(a, ors):
     b = re.sub(leadline, r'|\g<1>|#\g<2>|!', b)
 
     '''if session law intro has a leadline, it should have a period before next line break. E.g., Sec. 2. Defintions.'''
-    print(fr'({ses_sec})[{nbsp} ]+([^|\n\t\r]{{5,55}}?\.)[{nbsp} |]+')
     b = re.sub(fr'({ses_sec})[{nbsp} ]+([^|\n\t\r]{{5,55}}?\.)[{nbsp} |]+', r'|\g<1>|#\g<2>|!', b)  # with leadlines
     b = re.sub(fr'({ses_sec})[{nbsp} ]+\|*', r'|\g<1>|!', b)    # without leadlines
     # TODO Note sections 'sometimes' have double amends - no obvious solution here, maybe in classifying
@@ -116,5 +114,4 @@ def clean_up(a):
 
     b = re.sub(fr'[{nbsp }]*\|+', '|', b)
     b = re.sub(fr'[{nbsp }]*\|+', '|', b)
-
     return b
