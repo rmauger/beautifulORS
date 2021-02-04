@@ -42,11 +42,10 @@ form_starter = None
 form_ender = []
 
 
-def in_bracs(txt):          # takes in string beginning with "?(xxx)" and returns xxx as string.
-    t = str(txt)
-    if -1 < t.find(r'(') <= 1:     # if right paren is first bracket
-        return str(t[t.find(r'(')+1:t.find(r')')])
-        # todo could probably make regex entire program here, but if it ain't broke
+def in_bracs(txt):          # takes in string beginning with "(?)(xxx)" and returns xxx as string.
+    match = re.match(r'^(.?\()(.{1,3})\)',txt)
+    if match:
+        return match.group(2)
     else:
         return None
 

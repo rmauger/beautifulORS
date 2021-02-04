@@ -99,11 +99,11 @@ def build_sections(sections_list, mn):
                     except Exception as e:
                         print_err(e, f'creating new error div failed for {line}')
                         err = mn.div(class_='unknown')
-                    err.p("** WARNING ** ", style='font-weight:bold;;text-align:center')
+                    err.p("** WARNING ** ", style='font-weight:bold;text-align:center')
                     err.p("Lines below are part of this section, but may not have parsed correctly.",
-                          style='font-weight:bold; text-align: center')
+                          style='font-weight:bold;text-align:center')
                     ptemp = err.p("View original from the ",
-                                  style='font-weight:bold:;text-align: center; margin-bottom: 20px')
+                                  style='font-weight:bold;text-align:center;margin-bottom:20px')
                     ptemp.a('Oregon Legislature Website',
                             href='https://www.oregonlegislature.gov/bills_laws/Pages/ORS.aspx')
                     ptemp += '.'
@@ -194,5 +194,5 @@ def write_html(html_doc):
     bs_ors = BeautifulSoup(clean_doc, 'html.parser')
     pretty = bs_ors.prettify()
     pretty = pretty.replace('<bound method Tag.prettify of', '<!DOCTYPE html>')
-    with open('new_html.html', 'w') as writer:
+    with open('new_html2.html', 'w') as writer:
         writer.write(pretty)
