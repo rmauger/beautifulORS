@@ -17,8 +17,7 @@ def get_html(ors):
 
 
 def ors_html_dl(ors_url):
-    dl_ors = BeautifulSoup(request.urlopen(ors_url).read(), 'html.parser')  # TODO happy with parser? something easier?
-    # dl_ors.smooth()    # depreciating at least temporarily. Not seeming to work on Pi.
+    dl_ors = BeautifulSoup(request.urlopen(ors_url).read(), 'html.parser')
     ors_line = ""
     for i in dl_ors.find_all('p', class_='MsoNormal'):          # extract line from html
         if re.search('align="center"', str(i)):
