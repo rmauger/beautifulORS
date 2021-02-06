@@ -84,7 +84,7 @@ def typer(type_me, chp):         # takes in line, returns best guess of line typ
         except ValueError:
             pass
         if in_brac == in_brac.upper():
-            if in_brac == 'L':
+            if in_brac == 'L' or in_brac == 'LL' or in_brac=='LLL':
                 return 'eL'
             else:
                 for i in roman:
@@ -276,13 +276,10 @@ def check_note(nl):
     # classifying note secs
     global ors
     if nl[0] == 'note_sec':  # classifying note secs
-        if re.search(fr'The amendments to ({ors}|section)', nl[1]):
-            nl[0] = 'note_both'
-        elif re.search(r'Sections? \d{1,3}.+chapter', nl[1]):
+        if re.search(r'Sections? \d{1,3}.+chapter', nl[1]):
             nl[0] = 'note_next'
         else:
             nl[0] = 'note_prev'
-    # TODO depreciate or re-evaluate whether identifying both v. previous can be used successfully
 
 
 def del_intro(typed_list):

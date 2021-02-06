@@ -125,8 +125,7 @@ def sec_children(line, kid_div):        # if it's a note/source note, it goes wi
     if line[0] == 'source_note':
         kid_div.p(line[1], class_='source_note')
         return True
-    elif line[0] == 'note_prev' or line[0] == 'note_both':
-        # TODO note_both can probably be depreciated after confirming with some examples; see classify.py notes
+    elif line[0] == 'note_prev':
         kid_div.p(line[1], class_='note')
         return True
     else:
@@ -138,14 +137,13 @@ def cur_children(line, my_div):
     global err
     global slug
 
-    # todo carve out form piece below
+    # todo carve out form piece below into new section
     global form
     if line[0] == 'form_start':  # trying to create new form box based on parentage
         try:
             form_id = line[2]  # pulls in parent of form type from prior line todo: although why not just do that now?
             if form_id == 0:
                 form = slug.div(class_='form-box')
-            # TODO simplify below
             elif str(form_id).isnumeric():
                 if 1 <= form_id <= 5:
                     form = subs_list[form_id-1].div(class_='form-box')

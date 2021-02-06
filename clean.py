@@ -96,7 +96,6 @@ def sec_start(a, ors):
     '''if session law intro has a leadline, it should have a period before next line break. E.g., Sec. 2. Defintions.'''
     b = re.sub(fr'({ses_sec})[{nbsp} ]+([^|\n\t\r]{{5,55}}?\.)[{nbsp} |]+', r'|\g<1>|#\g<2>|!', b)  # with leadlines
     b = re.sub(fr'({ses_sec})[{nbsp} ]+\|*', r'|\g<1>|!', b)    # without leadlines
-    # TODO Note sections 'sometimes' have double amends - no obvious solution here, maybe in classifying
     b = re.sub(r'!+', r'!', b)
     return b
 
