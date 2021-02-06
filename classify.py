@@ -27,11 +27,12 @@ from common import print_err
 # global fixed variables for def cleaner:
 roman = ['iii', 'iv', 'vi', 'vii', 'viii', 'ix', 'xi', 'xii', 'xiii', 'xiv', 'xv']
 romanish = ['i', 'ii', 'v', 'x']
+romanlist = ['i', 'ii', 'iii','iv','v','vi','vii','viii','ix','x','xi','xii','xiii','xiv','xv']
 prior_para = {
     'i': 'h',
     'ii': 'hh',
     'v': 'u',
-    'x': 'w'}       # letter with its preceeding pair
+    'x': 'w'}       # romanish letter with its preceeding pair if not roman numeral
 nbsp = u'\xa0'
 
 # global variables assigned/used during program
@@ -166,19 +167,29 @@ def check_form(fl, lst):   # checks *formline* to determine if in form, based in
                 parenmatch = r'\(.\)'
                 mycite = get_cite(lst, count-1)
                 a = 0
-                for match in re.finditer(parenmatch, mycite):
-                    st = match.start()+1
+                for match in re.finditer(parenmatch, mycite):   # cycles though () in parent cite
+                    st = match.start()+1                        
                     end = match.end()-1
-                    char = mycite[st:end]
+                    char = mycite[st:end]                       # extracts from paren into char
                     a += 1
-                    if a == 1:
+                    if a == 1:                                  # based on the level, adds 1 to figure out what could end form
                         form_ender.append((str(int(char)+1)))
                     elif (a == 2 or a == 3) and len(char) == 1:
                         form_ender.append(chr(ord(char)+1))
-                    elif a == 4 or a == 5:
-                        pass  # todo is there any possible way to add roman numerals (could just make a library/list?)
+                    elif a == 4:
+                        b=0
+                        for i in romanlist:
+                            b+=1
+                            if i==char:
+                                form_ender.append(romanlist[b])    
+                    elif a == 5:
+                        b=0
+                        for i in romanlist:
+                            b+=1
+                            if i.lower==char:
+                                form_ender.append(romanlist[b])
         in_form = True
-    if in_form:
+    elif in_form:
         if fl[0] == 'subtitle' or fl[0] == 'sub2title' or fl[0] == 'dunno' or fl[0] == 0:
             fl[0] = 'form'
         else:  # check to see if next depth or a new section / source note that will end our form
