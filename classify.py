@@ -57,6 +57,8 @@ def typer(type_me, chp):         # takes in line, returns best guess of line typ
     txt = str(type_me).strip()
     if txt[1:(9 + len(ors))] == f'Chapter {ors}' or txt[0:(8 + len(ors))] == f'Chapter {ors}':
         return 'title'
+    if len(txt)==0:
+        return 'dunno'
     if txt[0] == '#':
         return 'leadline'
     elif txt[0] == '%':
@@ -220,8 +222,16 @@ def check_form(fl, lst):   # checks *formline* to determine if in form, based in
 
 
 def get_cite(alist, cnt):
+    '''takes in list of ors chapter pairs [alist] and count for item in the list [cnt]
+    and returns as string full citation based on current depth of item - e.g., "123.456 (1)(b)(C)(iv)(V)"
+    '''
 
     def back_track(findme):
+        '''given a depth ( 0 = subsec, 4 = sub3para) [findme] cycles backwards through list [alist]
+        and returns information found in bracket at that sublevel. 
+        (e.g. "(iii) A tenant shall..." -> "iii" )
+        If there's no brackets, returns section itself e.g. "90.100"'''
+
         num = 0
         while True:
             if alist[cnt-1-num][0] == findme:
@@ -232,13 +242,16 @@ def get_cite(alist, cnt):
             num += 1
             if cnt-1-num < 0:
                 return "NOT FOUND"
-
+                print_err(0, f'(Did not find item of depth of {findme} anywhere before line {cnt-1}.)')
     my_cite = ''
-    for i in range(4, 0, -1):              # cycle backwards through depth (5 -> 1)
-        if alist[cnt][0] > i:             # (subsec)(para)(subpara)(sub2para)(sub3para)
-            my_cite = f'({back_track(i)}){my_cite}'
-        if alist[cnt][0] == i:
-            my_cite = f'({in_bracs(alist[cnt][1])}){my_cite}'
+
+    for i in range(4, 0, -1): # cycle backwards through depth (4 -> 0) (sub3para, sub2para, subpara, para, subsec)
+        if str(alist[cnt][0]).isnumeric():
+            if alist[cnt][0] > i:             # 
+                my_cite = f'({back_track(i)}){my_cite}'
+            if alist[cnt][0] == i:
+                my_cite = f'({in_bracs(alist[cnt][1])}){my_cite}'
+        
     section = back_track('or_sec')
     if re.search(r'\d{1,3}[A-C]?\.\d{3,4}', section):
         my_cite = f'ORS {section} {my_cite}'

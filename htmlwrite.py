@@ -24,7 +24,7 @@ def html_builder(ors_list, chp):
     main = body.div(class_='main')
     main.h2('Oregon Revised Statutes', class_='subtitle')
     build_sections(ors_list, main)
-    write_html(h)
+    write_html(h, chp)
 
 
 def build_index(index_list, ors, by):
@@ -187,10 +187,10 @@ def sub_levels(depth, parent, data):   #  text, cls):
         return False
 
 
-def write_html(html_doc):
+def write_html(html_doc, chp):
     clean_doc = str(html_doc).replace('class_', 'class')  # clean up class tags
     bs_ors = BeautifulSoup(clean_doc, 'html.parser')
     pretty = bs_ors.prettify()
     pretty = pretty.replace('<bound method Tag.prettify of', '<!DOCTYPE html>')
-    with open('new_html2.html', 'w') as writer:
+    with open((f'new_html{chp}.html'), 'w') as writer:
         writer.write(pretty)
